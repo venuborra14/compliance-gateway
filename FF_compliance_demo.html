@@ -1,0 +1,1475 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PORTGUARD // EU-India-ASEAN Customs Shield</title>
+
+  <!-- Tailwind CSS (Play CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Inter + JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+
+  <script>
+    // Tailwind runtime config
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+          },
+          colors: {
+            owblue: '#000066',
+            owgreige: '#ccc3b9',
+            owgreen: '#33ff66',
+            ink: {
+              950: '#020617',
+              900: '#0b1220',
+              850: '#101a2c',
+              800: '#1e293b',
+            },
+          },
+          boxShadow: {
+            'glow-emerald': '0 0 0 1px rgba(51,255,102,0.45), 0 8px 32px -8px rgba(51,255,102,0.40)',
+            'glow-amber': '0 0 0 1px rgba(245,158,11,0.35), 0 8px 32px -8px rgba(245,158,11,0.35)',
+            'glow-red': '0 0 0 1px rgba(239,68,68,0.45), 0 8px 32px -8px rgba(239,68,68,0.40)',
+          },
+          keyframes: {
+            scan: {
+              '0%': { transform: 'translateY(-100%)' },
+              '100%': { transform: 'translateY(100%)' },
+            },
+            blink: {
+              '0%, 100%': { opacity: '1' },
+              '50%': { opacity: '0' },
+            },
+            'pulse-soft': {
+              '0%, 100%': { opacity: '0.85' },
+              '50%': { opacity: '0.35' },
+            },
+          },
+          animation: {
+            scan: 'scan 2.4s ease-in-out infinite',
+            blink: 'blink 1.05s steps(2, end) infinite',
+            'pulse-soft': 'pulse-soft 2.5s ease-in-out infinite',
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    html,
+    body {
+      background: #000066;
+    }
+
+    body {
+      font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    /* Background grid + glow */
+    .bg-grid {
+      background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+      background-size: 36px 36px;
+      background-position: -1px -1px;
+    }
+
+    .bg-grid-mask {
+      /* Radial mask was clipping content on left/right sides — replaced with
+         a vertical fade so grid lines dissolve toward the bottom only */
+      -webkit-mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
+      mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
+    }
+
+    /* Scrollbars */
+    .thin-scroll::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    .thin-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .thin-scroll::-webkit-scrollbar-thumb {
+      background: #000099;
+      border-radius: 8px;
+      border: 1px solid rgba(51, 255, 102, 0.12);
+    }
+
+    .thin-scroll::-webkit-scrollbar-thumb:hover {
+      background: #0000b3;
+    }
+
+    /* JSON colorization (OWGreen accent palette) */
+    .json-key {
+      color: #67e8f9;
+    }
+
+    /* cyan-300 */
+    .json-string {
+      color: #6ee7b7;
+    }
+
+    /* emerald-300 */
+    .json-number {
+      color: #fbbf24;
+    }
+
+    /* amber-400 */
+    .json-bool {
+      color: #c4b5fd;
+    }
+
+    .json-null {
+      color: #ccc3b9;
+    }
+
+    .json-punct {
+      color: rgba(204, 195, 185, 0.55);
+    }
+
+    /* Term caret */
+    .caret::after {
+      content: '▍';
+      margin-left: 2px;
+      color: #33ff66;
+      animation: blink 1.05s steps(2, end) infinite;
+    }
+
+    /* Gauge ring track */
+    .gauge-track {
+      stroke: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Subtle inner ring divider */
+    .ring-divider {
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+    }
+
+    /* Range slider styling for the EUDR toggle (we use a checkbox hack) */
+    .toggle-track {
+      transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .toggle-thumb {
+      transition: transform 0.2s ease;
+    }
+
+    /* Input focus ring (OWGreen accent) */
+    .field-input:focus {
+      outline: none;
+      border-color: rgba(51, 255, 102, 0.40);
+      box-shadow: 0 0 0 3px rgba(51, 255, 102, 0.18);
+    }
+
+    .field-input.is-invalid {
+      border-color: rgba(239, 68, 68, 0.55);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+    }
+
+    .field-input.is-warn {
+      border-color: rgba(245, 158, 11, 0.55);
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12);
+    }
+
+    /* Number input no spinners */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    /* Scenario button hover */
+    .scenario-btn {
+      transition: all 0.15s ease;
+    }
+
+    .scenario-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    /* OWGradient header */
+    header.sticky {
+      background: linear-gradient(to bottom,
+          rgba(51, 255, 102, 0.28) 0%,
+          rgba(0, 0, 80, 0.97) 100%);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen text-white bg-[#000066] bg-grid bg-grid-mask">
+
+  <!-- ============================== HEADER ============================== -->
+  <header class="sticky top-0 z-30 backdrop-blur-xl border-b border-white/[0.25]">
+    <div
+      class="max-w-[1600px] mx-auto px-5 lg:px-8 py-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div class="flex items-center gap-3">
+        <div
+          class="relative h-10 w-10 rounded-xl bg-gradient-to-br from-[#33ff66]/30 via-[#33ff66]/10 to-transparent border border-[#33ff66]/40 flex items-center justify-center shadow-glow-emerald">
+          <i data-lucide="shield-check" class="w-5 h-5 text-[#33ff66]"></i>
+          <span class="absolute inset-0 rounded-xl ring-1 ring-inset ring-[#33ff66]/15"></span>
+        </div>
+        <div class="leading-tight">
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold tracking-[0.2em] text-white text-[15px]">PORTGUARD</span>
+            <span class="text-[#ccc3b9]/50 text-[15px]">//</span>
+            <span class="font-semibold tracking-wide text-[#ccc3b9] text-[13px]">EU-India-ASEAN Customs Shield</span>
+          </div>
+          <div class="text-[11px] font-mono uppercase tracking-widest text-[#ccc3b9]/60 mt-0.5">
+            v2.4.1 &nbsp;·&nbsp; Corridor Compliance Gateway &nbsp;·&nbsp; MLETR sandbox
+          </div>
+        </div>
+      </div>
+
+      <!-- Route segmented toggle -->
+      <div class="flex flex-col gap-2 lg:items-end">
+        <div class="text-[10px] uppercase tracking-[0.25em] text-[#ccc3b9]/70 font-mono">Active Corridor</div>
+        <div id="route-toggle"
+          class="relative inline-flex p-1 rounded-2xl bg-white/[0.22] border border-white/[0.25] ring-divider select-none">
+          <!-- sliding pill (OWGreen accent for active route) -->
+          <span id="route-pill"
+            class="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-xl bg-gradient-to-b from-[#33ff66]/30 via-[#33ff66]/15 to-[#33ff66]/5 border border-[#33ff66]/60 shadow-[0_0_18px_-2px_rgba(51,255,102,0.55),inset_0_1px_0_rgba(51,255,102,0.25)] transition-transform duration-300 ease-out"></span>
+          <button data-route="A"
+            class="route-btn relative z-10 px-4 lg:px-5 py-2 text-xs font-bold tracking-wider uppercase rounded-xl flex items-center gap-2 text-white">
+            <i data-lucide="ship" class="w-3.5 h-3.5"></i>
+            <span>Route A</span>
+            <span class="hidden sm:inline text-[10px] font-mono text-[#ccc3b9]">EU · Rotterdam / Hamburg</span>
+          </button>
+          <button data-route="B"
+            class="route-btn relative z-10 px-4 lg:px-5 py-2 text-xs font-semibold tracking-wider uppercase rounded-xl flex items-center gap-2 text-[#ccc3b9]">
+            <i data-lucide="plane" class="w-3.5 h-3.5"></i>
+            <span>Route B</span>
+            <span class="hidden sm:inline text-[10px] font-mono text-[#ccc3b9]/70">ASEAN · KL / Singapore</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================== MAIN ============================== -->
+  <main class="max-w-[1600px] mx-auto px-5 lg:px-8 py-6 lg:py-8">
+
+    <div class="grid grid-cols-12 gap-6">
+
+      <!-- ===================== LEFT PANEL: FORM ===================== -->
+      <section class="col-span-12 lg:col-span-5 xl:col-span-5">
+
+        <!-- Form card -->
+        <div class="rounded-2xl border border-white/[0.25] bg-white/[0.22] ring-divider">
+          <div class="px-5 lg:px-6 py-4 border-b border-white/[0.25] flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i data-lucide="file-text" class="w-4 h-4 text-[#ccc3b9]"></i>
+              <h2 class="text-[13px] font-bold tracking-wider uppercase text-white">Documentation Desk</h2>
+              <span class="text-[10px] font-mono text-[#ccc3b9]/70 ml-1">/ forwarder.intake</span>
+            </div>
+            <div id="route-badge"
+              class="px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest border border-[#33ff66]/40 text-[#33ff66] bg-[#33ff66]/10">
+              EU · Route A
+            </div>
+          </div>
+
+          <form id="intake-form" class="px-5 lg:px-6 py-5 space-y-5" autocomplete="off" onsubmit="return false;">
+
+            <!-- Names -->
+            <fieldset class="space-y-3">
+              <legend class="text-[10px] uppercase tracking-[0.25em] text-[#ccc3b9]/70 font-mono mb-2">Company Profile ·
+                ICEGATE</legend>
+
+              <div>
+                <label class="text-xs uppercase tracking-wider text-[#ccc3b9] font-semibold" for="iecName">IEC
+                  Registration Name</label>
+                <input id="iecName" name="iecName" type="text"
+                  class="field-input mt-1 w-full rounded-lg bg-black/55 border border-white/[0.25] px-3 py-2.5 text-sm text-white placeholder-[#ccc3b9]/40 font-mono"
+                  value="Ganesha Textiles Pvt Ltd" />
+              </div>
+
+              <div>
+                <label class="text-xs uppercase tracking-wider text-[#ccc3b9] font-semibold" for="invoiceName">Invoice
+                  Legal Name</label>
+                <input id="invoiceName" name="invoiceName" type="text"
+                  class="field-input mt-1 w-full rounded-lg bg-black/55 border border-white/[0.25] px-3 py-2.5 text-sm text-white placeholder-[#ccc3b9]/40 font-mono"
+                  value="Ganesha Textiles Limited" />
+              </div>
+
+              <!-- Name match flag -->
+              <div id="name-match-flag" class="flex items-center gap-2 text-[11px] font-mono">
+                <span class="inline-block h-1.5 w-1.5 rounded-full bg-amber-400"></span>
+                <span class="text-amber-300">SUBJECTIVE STRING MISMATCH</span>
+                <span class="text-[#ccc3b9]/40">·</span>
+                <span class="text-[#ccc3b9]/70">officer query risk</span>
+              </div>
+            </fieldset>
+
+            <!-- Commodity / HS / Weight -->
+            <fieldset class="space-y-3">
+              <legend class="text-[10px] uppercase tracking-[0.25em] text-[#ccc3b9]/70 font-mono mb-2">Commodity &amp;
+                Classification</legend>
+
+              <div class="grid grid-cols-12 gap-3">
+                <div class="col-span-12 sm:col-span-7">
+                  <label class="text-xs uppercase tracking-wider text-[#ccc3b9] font-semibold"
+                    for="commodity">Commodity</label>
+                  <div class="relative mt-1">
+                    <select id="commodity" name="commodity"
+                      class="field-input appearance-none w-full rounded-lg bg-black/55 border border-white/[0.25] pl-3 pr-9 py-2.5 text-sm text-white font-mono">
+                      <option value="coffee">Coffee Beans</option>
+                      <option value="cotton">Organic Cotton Yarn</option>
+                      <option value="steel">Structural Steel Plates</option>
+                      <option value="rubber">Natural Rubber Sheeting</option>
+                    </select>
+                    <i data-lucide="chevron-down"
+                      class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-[#ccc3b9] pointer-events-none"></i>
+                  </div>
+                </div>
+                <div class="col-span-12 sm:col-span-5">
+                  <label class="text-xs uppercase tracking-wider text-[#ccc3b9] font-semibold" for="hsCode">HS Code
+                    (ITC-HS)</label>
+                  <input id="hsCode" name="hsCode" type="text" inputmode="numeric"
+                    class="field-input mt-1 w-full rounded-lg bg-black/55 border border-white/[0.25] px-3 py-2.5 text-sm text-white placeholder-[#ccc3b9]/40 font-mono tracking-wider"
+                    value="5208" maxlength="10" />
+                  <div id="hs-help" class="text-[10px] font-mono mt-1 text-amber-400">Needs 8 digits for ICEGATE 2.0
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label class="text-xs uppercase tracking-wider text-[#ccc3b9] font-semibold" for="weight">Gross Cargo
+                  Weight (KG)</label>
+                <div class="relative mt-1">
+                  <input id="weight" name="weight" type="number" min="0" step="1"
+                    class="field-input w-full rounded-lg bg-black/55 border border-white/[0.25] pl-3 pr-14 py-2.5 text-sm text-white placeholder-[#ccc3b9]/40 font-mono"
+                    value="12500" />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-[#ccc3b9]">KG</span>
+                </div>
+              </div>
+            </fieldset>
+
+            <!-- Route B: ASEAN FOB / VNM -->
+            <fieldset id="routeB-fields" class="space-y-3 hidden">
+              <legend
+                class="text-[10px] uppercase tracking-[0.25em] text-[#ccc3b9]/70 font-mono mb-2 flex items-center gap-2">
+                <i data-lucide="scroll-text" class="w-3 h-3"></i>
+                ASEAN · AITIGA Rules of Origin
+              </legend>
+
+              <div class="grid grid-cols-12 gap-3">
+                <div class="col-span-12 sm:col-span-6">
+                  <label class="text-xs uppercase tracking-wider text-[#ccc3b9] font-semibold" for="fob">FOB Value
+                    (USD)</label>
+                  <div class="relative mt-1">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-[#ccc3b9]">$</span>
+                    <input id="fob" name="fob" type="number" min="0" step="100"
+                      class="field-input w-full rounded-lg bg-black/55 border border-white/[0.25] pl-7 pr-3 py-2.5 text-sm text-white placeholder-[#ccc3b9]/40 font-mono"
+                      value="15000" />
+                  </div>
+                </div>
+                <div class="col-span-12 sm:col-span-6">
+                  <label class="text-xs uppercase tracking-wider text-[#ccc3b9] font-semibold" for="vnm">VNM
+                    Non-Originating (USD)</label>
+                  <div class="relative mt-1">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-[#ccc3b9]">$</span>
+                    <input id="vnm" name="vnm" type="number" min="0" step="100"
+                      class="field-input w-full rounded-lg bg-black/55 border border-white/[0.25] pl-7 pr-3 py-2.5 text-sm text-white placeholder-[#ccc3b9]/40 font-mono"
+                      value="9500" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- RVC readout -->
+              <div class="rounded-lg border border-white/[0.25] bg-black/55 p-3 flex items-center justify-between">
+                <div>
+                  <div class="text-[10px] uppercase tracking-[0.25em] text-[#ccc3b9] font-mono">RVC · Regional Value
+                    Content</div>
+                  <div class="text-[10px] text-[#ccc3b9]/70 font-mono mt-0.5">RVC = ((FOB − VNM) / FOB) × 100</div>
+                </div>
+                <div class="text-right">
+                  <div id="rvc-value" class="text-xl font-bold font-mono text-[#33ff66]">36.67%</div>
+                  <div id="rvc-flag" class="text-[10px] font-mono uppercase tracking-widest text-[#33ff66]">PASS · ≥ 35%
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+            <!-- Route A: EU ESG -->
+            <fieldset id="routeA-fields" class="space-y-4 hidden">
+              <legend
+                class="text-[10px] uppercase tracking-[0.25em] text-[#ccc3b9]/70 font-mono mb-2 flex items-center gap-2">
+                <i data-lucide="leaf" class="w-3 h-3"></i>
+                EU · Environmental &amp; Carbon Compliance
+              </legend>
+
+              <!-- EUDR Toggle -->
+              <div class="flex items-start justify-between gap-4 rounded-lg border border-white/[0.25] bg-black/55 p-3">
+                <div>
+                  <div class="text-xs uppercase tracking-wider text-[#ccc3b9] font-semibold flex items-center gap-2">
+                    EUDR Plot Coordinates
+                    <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/[0.10] text-[#ccc3b9]">required:
+                      coffee · rubber</span>
+                  </div>
+                  <div class="text-[11px] text-[#ccc3b9]/80 mt-1">Polygon geolocation of production plot uploaded to EU
+                    Information System.</div>
+                </div>
+                <label class="inline-flex items-center cursor-pointer shrink-0">
+                  <input id="eudrToggle" type="checkbox" class="sr-only peer">
+                  <span
+                    class="toggle-track relative w-11 h-6 rounded-full bg-white/[0.18] peer-checked:bg-[#33ff66]/80 peer-focus:ring-2 peer-focus:ring-[#33ff66]/40">
+                    <span class="toggle-thumb absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow"></span>
+                  </span>
+                </label>
+              </div>
+
+              <div>
+                <label class="text-xs uppercase tracking-wider text-[#ccc3b9] font-semibold" for="cbam">CBAM Carbon
+                  Emissions ID</label>
+                <div class="relative mt-1">
+                  <i data-lucide="factory" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#ccc3b9]"></i>
+                  <input id="cbam" name="cbam" type="text"
+                    class="field-input w-full rounded-lg bg-black/55 border border-white/[0.25] pl-9 pr-3 py-2.5 text-sm text-white placeholder-[#ccc3b9]/40 font-mono"
+                    value="EU-CBAM-90812-CN" />
+                </div>
+              </div>
+            </fieldset>
+
+          </form>
+        </div>
+
+        <!-- Demo scenarios -->
+        <div class="mt-6 rounded-2xl border border-white/[0.25] bg-white/[0.22] ring-divider p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="flask-conical" class="w-4 h-4 text-[#ccc3b9]"></i>
+            <h3 class="text-[12px] font-bold tracking-wider uppercase text-white">Pre-Set Demo Scenarios</h3>
+            <span class="text-[10px] font-mono text-[#ccc3b9]/70 ml-1">/ one-click load</span>
+          </div>
+          <div class="grid grid-cols-1 gap-2.5">
+            <button data-scenario="1"
+              class="scenario-btn text-left rounded-lg border border-[#ccc3b9]/20 bg-[#ccc3b9]/5 hover:bg-[#ccc3b9]/10 hover:border-[#ccc3b9]/35 px-3 py-2.5">
+              <div class="flex items-center gap-2">
+                <span
+                  class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#ccc3b9]/15 text-[#ccc3b9] uppercase tracking-widest">Scenario
+                  1</span>
+                <span class="text-sm text-white font-medium">Non-Compliant Coffee Export to Germany</span>
+              </div>
+              <div class="text-[11px] text-[#ccc3b9]/70 mt-1 font-mono">Triggers HS length + EUDR geolocation blocks
+              </div>
+            </button>
+
+            <button data-scenario="2"
+              class="scenario-btn text-left rounded-lg border border-[#ccc3b9]/20 bg-[#ccc3b9]/5 hover:bg-[#ccc3b9]/10 hover:border-[#ccc3b9]/35 px-3 py-2.5">
+              <div class="flex items-center gap-2">
+                <span
+                  class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#ccc3b9]/15 text-[#ccc3b9] uppercase tracking-widest">Scenario
+                  2</span>
+                <span class="text-sm text-white font-medium">Failed AITIGA Rubber Sourcing to Malaysia</span>
+              </div>
+              <div class="text-[11px] text-[#ccc3b9]/70 mt-1 font-mono">Low RVC % rejection on Route B</div>
+            </button>
+
+            <button data-scenario="3"
+              class="scenario-btn text-left rounded-lg border border-[#33ff66]/30 bg-[#33ff66]/5 hover:bg-[#33ff66]/10 hover:border-[#33ff66]/50 px-3 py-2.5">
+              <div class="flex items-center gap-2">
+                <span
+                  class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#33ff66]/15 text-[#33ff66] uppercase tracking-widest">Scenario
+                  3</span>
+                <span class="text-sm text-white font-medium">Fully Compliant Export State (Green)</span>
+              </div>
+              <div class="text-[11px] text-[#ccc3b9] mt-1 font-mono">Names match · 8-digit HS · ESG toggled · ready to
+                transmit</div>
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ===================== RIGHT PANEL: STATUS ROOM ===================== -->
+      <section class="col-span-12 lg:col-span-7 xl:col-span-7 space-y-6">
+
+        <!-- Top row: Gauge + Liability HUD -->
+        <div class="grid grid-cols-12 gap-6">
+
+          <!-- Health Score Ring -->
+          <div
+            class="col-span-12 sm:col-span-7 rounded-2xl border border-white/[0.25] bg-white/[0.22] ring-divider p-5">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <i data-lucide="activity" class="w-4 h-4 text-[#ccc3b9]"></i>
+                <h3 class="text-[12px] font-bold tracking-wider uppercase text-white">Global Health Score</h3>
+              </div>
+              <div class="text-[10px] font-mono text-[#ccc3b9]/70">/ compliance.index</div>
+            </div>
+
+            <div class="flex items-center gap-5">
+              <!-- SVG gauge -->
+              <div class="relative h-44 w-44 shrink-0">
+                <svg viewBox="0 0 120 120" class="h-full w-full -rotate-90">
+                  <!-- track -->
+                  <circle cx="60" cy="60" r="50" fill="none" stroke-width="10" class="gauge-track"></circle>
+                  <!-- progress -->
+                  <circle id="gauge-arc" cx="60" cy="60" r="50" fill="none" stroke-width="10" stroke-linecap="round"
+                    stroke="#33ff66" stroke-dasharray="314.159" stroke-dashoffset="94.248"
+                    class="transition-all duration-500 ease-out"
+                    style="filter: drop-shadow(0 0 8px rgba(51,255,102,0.55));"></circle>
+                  <!-- ticks -->
+                  <g stroke="rgba(255,255,255,0.15)" stroke-width="1">
+                    <line x1="60" y1="6" x2="60" y2="12"></line>
+                    <line x1="114" y1="60" x2="108" y2="60"></line>
+                    <line x1="60" y1="114" x2="60" y2="108"></line>
+                    <line x1="6" y1="60" x2="12" y2="60"></line>
+                  </g>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                  <div id="gauge-value" class="text-4xl font-extrabold tracking-tight font-mono text-white">70%</div>
+                  <div class="text-[10px] font-mono uppercase tracking-[0.25em] text-[#ccc3b9] mt-1">/ 100 max</div>
+                </div>
+              </div>
+
+              <!-- Status pill + breakdown -->
+              <div class="flex-1 min-w-0">
+                <div id="status-pill"
+                  class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest border bg-amber-500/10 border-amber-500/30 text-amber-300">
+                  <span class="inline-block h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse-soft"></span>
+                  <span id="status-pill-label">SUBJECTIVE RISK</span>
+                </div>
+                <p id="status-desc" class="text-[12px] text-[#ccc3b9] mt-3 leading-relaxed">
+                  One or more customs systems flag subjective risk. The forwarder should remediate flagged fields before
+                  transmitting the MLETR payload.
+                </p>
+
+                <div class="mt-4 space-y-1.5">
+                  <div class="flex items-center justify-between text-[11px] font-mono">
+                    <span class="text-[#ccc3b9] font-semibold uppercase tracking-widest">Critical</span>
+                    <span id="kpi-critical" class="text-red-300 font-semibold">0</span>
+                  </div>
+                  <div class="flex items-center justify-between text-[11px] font-mono">
+                    <span class="text-[#ccc3b9] font-semibold uppercase tracking-widest">Warnings</span>
+                    <span id="kpi-warn" class="text-amber-300 font-semibold">0</span>
+                  </div>
+                  <div class="flex items-center justify-between text-[11px] font-mono">
+                    <span class="text-[#ccc3b9] font-semibold uppercase tracking-widest">Passed checks</span>
+                    <span id="kpi-pass" class="text-[#33ff66] font-semibold">0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Liability HUD -->
+          <div
+            class="col-span-12 sm:col-span-5 rounded-2xl border border-white/[0.25] bg-white/[0.22] ring-divider p-5 flex flex-col">
+            <div class="flex items-center gap-2 mb-2">
+              <i data-lucide="scale" class="w-4 h-4 text-[#ccc3b9]"></i>
+              <h3 class="text-[12px] font-bold tracking-wider uppercase text-white">FIATA Liability HUD</h3>
+            </div>
+            <div class="text-[10px] font-mono text-[#ccc3b9]/70 mb-3">Cap = Weight (KG) × 2 SDR × 1.33 = 2.66</div>
+
+            <div class="rounded-lg border border-white/[0.25] bg-black/55 p-3 flex-1 flex flex-col justify-between">
+              <div>
+                <div class="text-[10px] uppercase tracking-[0.25em] text-[#ccc3b9] font-mono">Maximum Carrier Liability
+                </div>
+                <div class="flex items-baseline gap-2 mt-1">
+                  <span class="text-[10px] font-mono text-[#ccc3b9]">USD</span>
+                  <span id="liability-value" class="text-2xl font-bold font-mono text-[#33ff66]">33,250.00</span>
+                </div>
+              </div>
+              <div class="mt-3 text-[11px] font-mono text-[#ccc3b9] leading-relaxed">
+                <div class="flex justify-between"><span>Weight</span><span id="liability-weight"
+                    class="text-white">12,500 KG</span></div>
+                <div class="flex justify-between"><span>Multiplier</span><span class="text-white">× 2.66</span></div>
+                <div class="flex justify-between"><span>Convention</span><span class="text-white">FIATA Model
+                    Rules</span></div>
+              </div>
+            </div>
+
+            <div class="mt-3 flex items-center gap-2 text-[11px] font-mono text-[#ccc3b9]">
+              <i data-lucide="info" class="w-3.5 h-3.5 text-[#ccc3b9]"></i>
+              <span>Liability crystallizes at handover to consignee.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Risk Alert Terminal -->
+        <div class="rounded-2xl border border-white/[0.25] bg-white/[0.22] ring-divider">
+          <div class="px-5 py-4 border-b border-white/[0.25] flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i data-lucide="radar" class="w-4 h-4 text-[#ccc3b9]"></i>
+              <h3 class="text-[12px] font-bold tracking-wider uppercase text-white">Customs Shield · Live Risk
+                Alerts</h3>
+            </div>
+            <div class="flex items-center gap-2">
+              <span
+                class="inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-[#ccc3b9]">
+                <span class="h-1.5 w-1.5 rounded-full bg-[#33ff66] animate-pulse-soft"></span>
+                live
+              </span>
+              <span id="alerts-count"
+                class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/[0.10] text-[#ccc3b9]">0 active</span>
+            </div>
+          </div>
+
+          <div id="alerts-list" class="p-5 space-y-3 max-h-[420px] overflow-y-auto thin-scroll">
+            <!-- alerts injected by JS -->
+          </div>
+
+          <!-- Passed checks strip -->
+          <div id="passed-strip" class="px-5 py-3 border-t border-white/[0.25] bg-black/55 flex flex-wrap gap-2">
+            <!-- passed injected by JS -->
+          </div>
+        </div>
+
+        <!-- Transmit console -->
+        <div class="rounded-2xl border border-white/[0.25] bg-white/[0.22] ring-divider overflow-hidden">
+          <div class="px-5 py-4 border-b border-white/[0.25] flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i data-lucide="terminal" class="w-4 h-4 text-[#ccc3b9]"></i>
+              <h3 class="text-[12px] font-bold tracking-wider uppercase text-white">Transmit to Customs</h3>
+              <span class="text-[10px] font-mono text-[#ccc3b9]/70 ml-1">/ mletr.console</span>
+            </div>
+            <div class="flex items-center gap-2 text-[10px] font-mono text-[#ccc3b9]">
+              <i data-lucide="lock" class="w-3 h-3"></i>
+              <span>RSA-2048 · SHA-256</span>
+            </div>
+          </div>
+
+          <div class="p-5">
+            <button id="generate-btn"
+              class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#33ff66]/90 hover:bg-[#33ff66] text-[#00001a] text-sm font-bold uppercase tracking-wider shadow-glow-emerald transition">
+              <i data-lucide="file-signature" class="w-4 h-4"></i>
+              <span>Generate Signed Payload (MLETR-Compliant)</span>
+            </button>
+
+            <!-- Terminal output -->
+            <div id="terminal"
+              class="mt-4 rounded-xl border border-white/[0.25] bg-black/65 p-4 font-mono text-[12.5px] leading-relaxed min-h-[200px] relative overflow-hidden">
+              <div id="term-scan"
+                class="pointer-events-none absolute inset-x-0 -top-1/2 h-1/2 bg-gradient-to-b from-[#33ff66]/0 via-[#33ff66]/10 to-[#33ff66]/0 animate-scan">
+              </div>
+              <div id="term-content" class="relative">
+                <div class="text-[#ccc3b9]/70">
+                  <span class="text-[#33ff66]">portguard@gateway</span>:<span class="text-sky-400">~</span>$
+                  <span class="text-[#ccc3b9]">awaiting transmission — click "Generate Signed Payload" to sign &amp;
+                    serialize</span><span class="caret"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-10 pb-8 text-center text-[11px] font-mono text-[#ccc3b9]/60">
+      PORTGUARD · Demo build · Synthetic data only · No real customs systems contacted
+    </footer>
+
+  </main>
+
+  <!-- ============================== JS ============================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      // ---------- Helpers ----------
+      const $ = (sel, root = document) => root.querySelector(sel);
+      const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+      const fmtUSD = (n) => Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const fmtInt = (n) => Number(n || 0).toLocaleString('en-US');
+
+      // ---------- State ----------
+      const state = {
+        route: 'A', // 'A' or 'B'
+        form: {
+          iecName: 'Ganesha Textiles Pvt Ltd',
+          invoiceName: 'Ganesha Textiles Limited',
+          commodity: 'cotton',
+          hsCode: '5208',
+          weight: 12500,
+          fob: 15000,
+          vnm: 9500,
+          eudr: false,
+          cbam: 'EU-CBAM-90812-CN',
+        },
+        findings: [], // {id, system, severity, title, body, action, resolve}
+        passed: [],   // string[]
+      };
+
+      // ---------- DOM refs ----------
+      const els = {
+        routeBtns: $$('.route-btn'),
+        routePill: $('#route-pill'),
+        routeBadge: $('#route-badge'),
+        routeA: $('#routeA-fields'),
+        routeB: $('#routeB-fields'),
+
+        iecName: $('#iecName'),
+        invoiceName: $('#invoiceName'),
+        nameMatch: $('#name-match-flag'),
+        commodity: $('#commodity'),
+        hsCode: $('#hsCode'),
+        hsHelp: $('#hs-help'),
+        weight: $('#weight'),
+        fob: $('#fob'),
+        vnm: $('#vnm'),
+        rvcValue: $('#rvc-value'),
+        rvcFlag: $('#rvc-flag'),
+        eudrToggle: $('#eudrToggle'),
+        cbam: $('#cbam'),
+
+        gaugeArc: $('#gauge-arc'),
+        gaugeValue: $('#gauge-value'),
+        statusPill: $('#status-pill'),
+        statusPillLabel: $('#status-pill-label'),
+        statusDesc: $('#status-desc'),
+        kpiCritical: $('#kpi-critical'),
+        kpiWarn: $('#kpi-warn'),
+        kpiPass: $('#kpi-pass'),
+
+        liabilityValue: $('#liability-value'),
+        liabilityWeight: $('#liability-weight'),
+
+        alertsList: $('#alerts-list'),
+        alertsCount: $('#alerts-count'),
+        passedStrip: $('#passed-strip'),
+
+        generateBtn: $('#generate-btn'),
+        termContent: $('#term-content'),
+      };
+
+      // ---------- Systems ----------
+      const SYS_COLORS = {
+        ICEGATE: 'text-amber-300',
+        ICS2: 'text-sky-300',
+        AITIGA: 'text-[#ccc3b9]',
+        EUDR: 'text-[#33ff66]',
+      };
+
+      // ---------- Core rules ----------
+      function evaluate() {
+        const f = state.form;
+        const findings = [];
+        const passed = [];
+
+        // Rule 1: Name mismatch
+        const namesMatch = (f.iecName || '').trim().toLowerCase() === (f.invoiceName || '').trim().toLowerCase();
+        if (!namesMatch) {
+          findings.push({
+            id: 'name-mismatch',
+            system: 'ICEGATE',
+            severity: 'warn',
+            title: 'Subjective Rejection Risk',
+            body: 'String mismatch between IEC register and commercial invoice. Local assessment officer will query/reject at Nhava Sheva / Chennai.',
+            resolve: () => {
+              state.form.invoiceName = state.form.iecName;
+              els.invoiceName.value = state.form.invoiceName;
+              evaluate();
+            },
+          });
+        } else {
+          passed.push('Names match exactly (ICEGATE)');
+        }
+
+        // Rule 2: HS code length
+        const hsDigits = (f.hsCode || '').replace(/\D/g, '');
+        if (hsDigits.length === 0) {
+          findings.push({
+            id: 'hs-empty',
+            system: 'ICEGATE',
+            severity: 'critical',
+            title: 'ICEGATE 2.0 Error · HS code missing',
+            body: 'India mandates an 8-Digit ITC-HS classification code. Empty field triggers instant manual query and border hold.',
+            resolve: () => {
+              state.form.hsCode = '00000000';
+              els.hsCode.value = state.form.hsCode;
+              evaluate();
+            },
+          });
+        } else if (hsDigits.length < 8) {
+          findings.push({
+            id: 'hs-len',
+            system: 'ICEGATE',
+            severity: 'critical',
+            title: `ICEGATE 2.0 Error · HS code is ${hsDigits.length} digits`,
+            body: 'India mandates an 8-Digit ITC-HS classification code. 4 or 6-digit codes trigger instant manual queries and border holds.',
+            resolve: () => {
+              state.form.hsCode = hsDigits.padEnd(8, '0');
+              els.hsCode.value = state.form.hsCode;
+              evaluate();
+            },
+          });
+        } else if (hsDigits.length > 8) {
+          findings.push({
+            id: 'hs-len-long',
+            system: 'ICEGATE',
+            severity: 'warn',
+            title: `HS code is ${hsDigits.length} digits`,
+            body: 'Indian ICEGATE 2.0 prefers exactly 8 digits. Extended codes may require additional CTH explanation.',
+            resolve: () => {
+              state.form.hsCode = hsDigits.slice(0, 8);
+              els.hsCode.value = state.form.hsCode;
+              evaluate();
+            },
+          });
+        } else {
+          passed.push('HS Code is 8-digit (ICEGATE 2.0)');
+        }
+
+        // Rule 3: AITIGA RVC (Route B)
+        if (state.route === 'B') {
+          const fob = Number(f.fob) || 0;
+          const vnm = Number(f.vnm) || 0;
+          let rvc = 0;
+          if (fob > 0) rvc = ((fob - vnm) / fob) * 100;
+          const safeRvc = Number.isFinite(rvc) ? rvc : 0;
+
+          // update the readout regardless
+          els.rvcValue.textContent = safeRvc.toFixed(2) + '%';
+          if (safeRvc >= 35) {
+            els.rvcValue.className = 'text-xl font-bold font-mono text-[#33ff66]';
+            els.rvcFlag.className = 'text-[10px] font-mono uppercase tracking-widest text-[#33ff66]';
+            els.rvcFlag.textContent = `PASS · ≥ 35%`;
+          } else if (fob === 0) {
+            els.rvcValue.className = 'text-xl font-bold font-mono text-[#ccc3b9]';
+            els.rvcFlag.className = 'text-[10px] font-mono uppercase tracking-widest text-[#ccc3b9]/60';
+            els.rvcFlag.textContent = 'AWAITING FOB';
+          } else {
+            els.rvcValue.className = 'text-xl font-bold font-mono text-red-300';
+            els.rvcFlag.className = 'text-[10px] font-mono uppercase tracking-widest text-red-400';
+            els.rvcFlag.textContent = 'FAIL · < 35%';
+          }
+
+          if (fob > 0 && safeRvc < 35) {
+            findings.push({
+              id: 'rvc-low',
+              system: 'AITIGA',
+              severity: 'critical',
+              title: `AITIGA Rule Failure · RVC ${safeRvc.toFixed(2)}%`,
+              body: 'Regional Value Content is below the mandatory 35% threshold. Preferential tariff will be rejected by ASEAN customs.',
+              resolve: () => {
+                // Adjust VNM so RVC >= 35%
+                const targetVnm = Number(f.fob) * 0.64; // gives RVC = 36%
+                state.form.vnm = Math.max(0, Math.round(targetVnm));
+                els.vnm.value = state.form.vnm;
+                evaluate();
+              },
+            });
+          } else if (fob === 0) {
+            findings.push({
+              id: 'rvc-fob',
+              system: 'AITIGA',
+              severity: 'warn',
+              title: 'AITIGA awaiting FOB',
+              body: 'Provide a non-zero FOB value to evaluate Regional Value Content against the 35% threshold.',
+              resolve: () => {
+                state.form.fob = 20000;
+                els.fob.value = state.form.fob;
+                evaluate();
+              },
+            });
+          } else {
+            passed.push(`RVC ${safeRvc.toFixed(2)}% (AITIGA)`);
+          }
+        } else {
+          // Route A: no AITIGA
+          els.rvcValue.textContent = '—';
+          els.rvcValue.className = 'text-xl font-bold font-mono text-[#ccc3b9]/50';
+          els.rvcFlag.className = 'text-[10px] font-mono uppercase tracking-widest text-[#ccc3b9]/40';
+          els.rvcFlag.textContent = 'NOT APPLICABLE';
+        }
+
+        // Rule 4: EUDR (Route A + Coffee/Rubber)
+        if (state.route === 'A') {
+          const isEudrSubject = f.commodity === 'coffee' || f.commodity === 'rubber';
+          if (isEudrSubject && !f.eudr) {
+            findings.push({
+              id: 'eudr',
+              system: 'EUDR',
+              severity: 'critical',
+              title: 'EUDR Enforcement Block',
+              body: 'Geolocation polygon coordinates missing. Cargo will be denied loading at Nhava Sheva port.',
+              resolve: () => {
+                state.form.eudr = true;
+                els.eudrToggle.checked = true;
+                evaluate();
+              },
+            });
+          } else if (isEudrSubject && f.eudr) {
+            passed.push('EUDR polygon uploaded (EUDR)');
+          }
+
+          // CBAM is mandatory for steel; for other commodities just check presence
+          if (f.commodity === 'steel' && !f.cbam.trim()) {
+            findings.push({
+              id: 'cbam',
+              system: 'ICS2',
+              severity: 'critical',
+              title: 'CBAM Carbon Emissions ID missing',
+              body: 'CBAM ID required for steel imports into the EU under the Carbon Border Adjustment Mechanism.',
+              resolve: () => {
+                state.form.cbam = 'EU-CBAM-90812-CN';
+                els.cbam.value = state.form.cbam;
+                evaluate();
+              },
+            });
+          } else if (f.cbam.trim()) {
+            passed.push('CBAM ID present (ICS2)');
+          }
+        }
+
+        // ICS2 generic: weight must be positive
+        if (!Number(f.weight) || Number(f.weight) <= 0) {
+          findings.push({
+            id: 'weight',
+            system: 'ICS2',
+            severity: 'critical',
+            title: 'Cargo weight missing',
+            body: 'ICS2 pre-loading advance manifest requires positive gross cargo weight.',
+            resolve: () => {
+              state.form.weight = 12500;
+              els.weight.value = state.form.weight;
+              evaluate();
+            },
+          });
+        } else {
+          passed.push('Cargo weight declared (ICS2)');
+        }
+
+        state.findings = findings;
+        state.passed = passed;
+
+        renderNameFlag(namesMatch);
+        renderHSFlag(hsDigits);
+        renderLiability();
+        renderFindings();
+        renderScore();
+      }
+
+      // ---------- Renderers ----------
+      function renderNameFlag(matches) {
+        if (matches) {
+          els.nameMatch.innerHTML =
+            '<span class="inline-block h-1.5 w-1.5 rounded-full bg-[#33ff66]"></span>' +
+            '<span class="text-[#33ff66]">EXACT STRING MATCH</span>' +
+            '<span class="text-[#ccc3b9]/40">·</span>' +
+            '<span class="text-[#ccc3b9]/70">ICEGATE clear</span>';
+        } else {
+          els.nameMatch.innerHTML =
+            '<span class="inline-block h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse-soft"></span>' +
+            '<span class="text-amber-300">SUBJECTIVE STRING MISMATCH</span>' +
+            '<span class="text-[#ccc3b9]/40">·</span>' +
+            '<span class="text-[#ccc3b9]/70">officer query risk</span>';
+        }
+      }
+
+      function renderHSFlag(digits) {
+        els.hsCode.classList.remove('is-invalid', 'is-warn');
+        if (digits.length === 0) {
+          els.hsCode.classList.add('is-invalid');
+          els.hsHelp.textContent = 'HS code is required';
+          els.hsHelp.className = 'text-[10px] font-mono mt-1 text-red-400';
+        } else if (digits.length < 8) {
+          els.hsCode.classList.add('is-invalid');
+          els.hsHelp.textContent = `Needs ${8 - digits.length} more digit(s) for ICEGATE 2.0`;
+          els.hsHelp.className = 'text-[10px] font-mono mt-1 text-red-400';
+        } else if (digits.length > 8) {
+          els.hsCode.classList.add('is-warn');
+          els.hsHelp.textContent = 'ICEGATE prefers exactly 8 digits';
+          els.hsHelp.className = 'text-[10px] font-mono mt-1 text-amber-400';
+        } else {
+          els.hsHelp.textContent = 'ICEGATE 2.0 compliant';
+          els.hsHelp.className = 'text-[10px] font-mono mt-1 text-[#33ff66]';
+        }
+      }
+
+      function renderLiability() {
+        const w = Number(state.form.weight) || 0;
+        const cap = w * 2.66;
+        els.liabilityValue.textContent = fmtUSD(cap);
+        els.liabilityWeight.textContent = fmtInt(w) + ' KG';
+      }
+
+      function severityClasses(sev) {
+        if (sev === 'critical') return {
+          wrap: 'border-red-500/30 bg-red-500/5',
+          icon: 'text-red-400',
+          title: 'text-red-200',
+          sys: 'text-red-300',
+          body: 'text-white',
+          btn: 'bg-[#33ff66]/15 hover:bg-[#33ff66]/25 text-[#33ff66] border-[#33ff66]/30',
+          pulse: 'bg-red-400',
+        };
+        return {
+          wrap: 'border-amber-500/30 bg-amber-500/5',
+          icon: 'text-amber-400',
+          title: 'text-amber-200',
+          sys: 'text-amber-300',
+          body: 'text-white',
+          btn: 'bg-[#33ff66]/15 hover:bg-[#33ff66]/25 text-[#33ff66] border-[#33ff66]/30',
+          pulse: 'bg-amber-400',
+        };
+      }
+
+      function renderFindings() {
+        const list = els.alertsList;
+        list.innerHTML = '';
+
+        if (state.findings.length === 0) {
+          list.innerHTML = `
+          <div class="rounded-xl border border-[#33ff66]/40 bg-[#33ff66]/5 p-4 flex items-center gap-3">
+            <div class="h-9 w-9 rounded-lg bg-[#33ff66]/15 flex items-center justify-center">
+              <i data-lucide="check-circle-2" class="w-5 h-5 text-[#33ff66]"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold text-[#33ff66]">All systems nominal</div>
+              <div class="text-[11px] font-mono text-[#ccc3b9]">ICEGATE · ICS2 · AITIGA · EUDR — no active findings. Payload ready to transmit.</div>
+            </div>
+          </div>
+        `;
+        } else {
+          state.findings.forEach((f, i) => {
+            const c = severityClasses(f.severity);
+            const card = document.createElement('div');
+            card.className = `rounded-xl border ${c.wrap} p-4 transition`;
+            card.innerHTML = `
+            <div class="flex items-start gap-3">
+              <div class="relative h-9 w-9 shrink-0 rounded-lg bg-black/55 border border-white/[0.25] flex items-center justify-center">
+                <span class="absolute -top-1 -right-1 h-2 w-2 rounded-full ${c.pulse} animate-pulse-soft"></span>
+                <i data-lucide="${f.severity === 'critical' ? 'octagon-x' : 'alert-triangle'}" class="w-4.5 h-4.5 ${c.icon}" style="width:1.125rem;height:1.125rem"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-[10px] font-mono uppercase tracking-[0.2em] ${c.sys}">${f.system}</span>
+                  <span class="text-[10px] font-mono px-1.5 py-0.5 rounded ${f.severity === 'critical' ? 'bg-red-500/15 text-red-300' : 'bg-amber-500/15 text-amber-300'} uppercase tracking-widest">${f.severity}</span>
+                </div>
+                <div class="mt-1 text-sm font-semibold ${c.title}">${f.title}</div>
+                <div class="mt-1 text-[12px] ${c.body} leading-relaxed">${f.body}</div>
+                <div class="mt-3 flex items-center gap-2">
+                  <button data-resolve="${f.id}" class="auto-resolve inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1.5 rounded-lg border ${c.btn} transition">
+                    <i data-lucide="wand-2" class="w-3.5 h-3.5"></i>
+                    Auto-Resolve
+                  </button>
+                  <span class="text-[10px] font-mono text-[#ccc3b9]/50">finding #${String(i + 1).padStart(2, '0')}</span>
+                </div>
+              </div>
+            </div>
+          `;
+            list.appendChild(card);
+          });
+        }
+
+        // Alerts count
+        els.alertsCount.textContent = `${state.findings.length} active`;
+        els.alertsCount.className =
+          'text-[10px] font-mono px-2 py-0.5 rounded-full ' +
+          (state.findings.some(f => f.severity === 'critical')
+            ? 'bg-red-500/15 text-red-300'
+            : (state.findings.length ? 'bg-amber-500/15 text-amber-300' : 'bg-[#33ff66]/15 text-[#33ff66]'));
+
+        // Passed strip
+        els.passedStrip.innerHTML = '';
+        if (state.passed.length) {
+          state.passed.forEach(p => {
+            const chip = document.createElement('span');
+            chip.className = 'inline-flex items-center gap-1.5 text-[11px] font-mono px-2 py-1 rounded-md bg-[#33ff66]/5 border border-[#33ff66]/30 text-[#33ff66]';
+            chip.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i>${p}`;
+            els.passedStrip.appendChild(chip);
+          });
+        } else {
+          const chip = document.createElement('span');
+          chip.className = 'text-[11px] font-mono text-[#ccc3b9]/50';
+          chip.textContent = 'No passed checks yet.';
+          els.passedStrip.appendChild(chip);
+        }
+
+        // KPIs
+        els.kpiCritical.textContent = state.findings.filter(f => f.severity === 'critical').length;
+        els.kpiWarn.textContent = state.findings.filter(f => f.severity === 'warn').length;
+        els.kpiPass.textContent = state.passed.length;
+      }
+
+      function renderScore() {
+        // Score: start at 100, subtract per finding
+        let score = 100;
+        state.findings.forEach(f => {
+          score -= (f.severity === 'critical' ? 30 : 12);
+        });
+        score = Math.max(0, Math.min(100, score));
+
+        // Gauge
+        const C = 2 * Math.PI * 50; // 314.159
+        const offset = C * (1 - score / 100);
+        els.gaugeArc.setAttribute('stroke-dasharray', C.toFixed(3));
+        els.gaugeArc.setAttribute('stroke-dashoffset', offset.toFixed(3));
+
+        let color = '#33ff66';
+        let label = 'READY TO TRANSMIT';
+        let pillCls = 'bg-[#33ff66]/10 border-[#33ff66]/40 text-[#33ff66]';
+        let desc = 'All customs systems report clear. MLETR-signed payload is ready to transmit to target authority.';
+        let shadow = 'rgba(51,255,102,0.55)';
+
+        if (score < 60) {
+          color = '#ef4444';
+          label = 'CRITICAL BLOCK';
+          pillCls = 'bg-red-500/10 border-red-500/30 text-red-300';
+          desc = 'Critical findings detected. Forwarder must remediate flagged fields before customs will accept the filing.';
+          shadow = 'rgba(239,68,68,0.55)';
+        } else if (score < 90) {
+          color = '#f59e0b';
+          label = 'SUBJECTIVE RISK';
+          pillCls = 'bg-amber-500/10 border-amber-500/30 text-amber-300';
+          desc = 'One or more customs systems flag subjective risk. The forwarder should remediate flagged fields before transmitting the MLETR payload.';
+          shadow = 'rgba(245,158,11,0.55)';
+        }
+
+        els.gaugeArc.setAttribute('stroke', color);
+        els.gaugeArc.style.filter = `drop-shadow(0 0 6px ${shadow})`;
+        els.gaugeValue.textContent = score + '%';
+
+        els.statusPill.className = 'inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest border ' + pillCls;
+        els.statusPillLabel.textContent = label;
+        els.statusDesc.textContent = desc;
+
+        lucide.createIcons();
+      }
+
+      // ---------- Route switching ----------
+      function setRoute(route) {
+        if (route !== 'A' && route !== 'B') return;
+        state.route = route;
+
+        // Pill
+        els.routePill.style.transform = route === 'A' ? 'translateX(0%)' : 'translateX(100%)';
+
+        // Buttons
+        els.routeBtns.forEach(btn => {
+          const isActive = btn.dataset.route === route;
+          btn.classList.toggle('text-white', isActive);
+          btn.classList.toggle('text-[#ccc3b9]', !isActive);
+        });
+
+        // Fields visibility
+        els.routeA.classList.toggle('hidden', route !== 'A');
+        els.routeB.classList.toggle('hidden', route !== 'B');
+
+        // Badge (OWGreen for Route A, violet for Route B)
+        if (route === 'A') {
+          els.routeBadge.className = 'px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest border border-[#33ff66]/40 text-[#33ff66] bg-[#33ff66]/10';
+          els.routeBadge.textContent = 'EU · Route A';
+        } else {
+          els.routeBadge.className = 'px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest border border-[#ccc3b9]/40 text-[#ccc3b9] bg-[#ccc3b9]/10';
+          els.routeBadge.textContent = 'ASEAN · Route B';
+        }
+
+        evaluate();
+      }
+
+      // ---------- Scenarios ----------
+      const scenarios = {
+        1: () => {
+          setRoute('A');
+          state.form.iecName = 'Karnataka Coffee Estates Pvt Ltd';
+          state.form.invoiceName = 'Karnataka Coffee Exports Limited';
+          state.form.commodity = 'coffee';
+          state.form.hsCode = '0901';
+          state.form.weight = 18500;
+          state.form.eudr = false;
+          state.form.cbam = 'EU-CBAM-90812-CN';
+          syncForm();
+        },
+        2: () => {
+          setRoute('B');
+          state.form.iecName = 'Bharat Rubber Industries';
+          state.form.invoiceName = 'Bharat Rubber Industries';
+          state.form.commodity = 'rubber';
+          state.form.hsCode = '40081110';
+          state.form.weight = 22000;
+          state.form.fob = 15000;
+          state.form.vnm = 12000;
+          syncForm();
+        },
+        3: () => {
+          setRoute('A');
+          state.form.iecName = 'Bharat Premium Exports';
+          state.form.invoiceName = 'Bharat Premium Exports';
+          state.form.commodity = 'cotton';
+          state.form.hsCode = '52084210';
+          state.form.weight = 12500;
+          state.form.eudr = true;
+          state.form.cbam = 'EU-CBAM-90812-CN';
+          syncForm();
+        },
+      };
+
+      function syncForm() {
+        const f = state.form;
+        els.iecName.value = f.iecName;
+        els.invoiceName.value = f.invoiceName;
+        els.commodity.value = f.commodity;
+        els.hsCode.value = f.hsCode;
+        els.weight.value = f.weight;
+        els.fob.value = f.fob;
+        els.vnm.value = f.vnm;
+        els.eudrToggle.checked = !!f.eudr;
+        els.cbam.value = f.cbam;
+        evaluate();
+      }
+
+      // ---------- Payload generator ----------
+      function fakeHash(input) {
+        // Deterministic short hash for display
+        let h1 = 0x811c9dc5, h2 = 0xdeadbeef;
+        for (let i = 0; i < input.length; i++) {
+          const c = input.charCodeAt(i);
+          h1 = Math.imul(h1 ^ c, 16777619) >>> 0;
+          h2 = Math.imul(h2 ^ c, 2246822519) >>> 0;
+        }
+        const hex = (n, len) => n.toString(16).padStart(len, '0');
+        return (hex(h1, 8) + hex(h2, 8) + hex(h1 ^ h2, 8) + hex((h1 * 33) ^ h2, 8)).slice(0, 32);
+      }
+
+      function buildPayload() {
+        const f = state.form;
+        const now = new Date();
+        const isoNow = now.toISOString();
+        const sealTag = 'ESL-' + fakeHash(f.commodity + f.hsCode + f.weight).slice(0, 12).toUpperCase();
+        const titleHash = 'TIT-' + fakeHash(f.iecName + f.invoiceName + isoNow).slice(0, 24).toUpperCase();
+        const sigHash = 'SIG-' + fakeHash(JSON.stringify(f) + isoNow).toUpperCase();
+        const w = Number(f.weight) || 0;
+        const fob = Number(f.fob) || 0;
+        const vnm = Number(f.vnm) || 0;
+        const rvc = fob > 0 ? +(((fob - vnm) / fob) * 100).toFixed(2) : null;
+
+        const portByRoute = state.route === 'A'
+          ? { origin: 'INMUN (Nhava Sheva)', destination: 'NLRTM (Rotterdam)', alternate: 'DEHAM (Hamburg)' }
+          : { origin: 'INMAA (Chennai)', destination: 'MYPKL (Port Klang, KL)', alternate: 'SGSIN (Singapore)' };
+
+        const hsDigits = (f.hsCode || '').replace(/\D/g, '');
+
+        const payload = {
+          mletr_compliant: true,
+          envelope: {
+            payload_id: 'PG-' + isoNow.replace(/[^0-9]/g, '').slice(0, 14) + '-' + Math.floor(Math.random() * 9999).toString().padStart(4, '0'),
+            issued_at: isoNow,
+            issuer_did: 'did:portguard:in:forwarder:' + fakeHash(f.iecName).slice(0, 16),
+            corridor: state.route === 'A' ? 'IN-EU' : 'IN-ASEAN',
+            target_systems: state.route === 'A' ? ['ICEGATE', 'ICS2', 'EUDR'] : ['ICEGATE', 'AITIGA'],
+          },
+          parties: {
+            consignor: {
+              iec_registration_name: f.iecName,
+              invoice_legal_name: f.invoiceName,
+              names_match: (f.iecName.trim().toLowerCase() === f.invoiceName.trim().toLowerCase()),
+            },
+            routing: portByRoute,
+          },
+          goods: {
+            commodity: commodityLabel(f.commodity),
+            hs_code: hsDigits,
+            hs_code_length: hsDigits.length,
+            hs_compliant: hsDigits.length === 8,
+            gross_weight_kg: w,
+            fob_value_usd: state.route === 'B' ? fob : null,
+            vnm_usd: state.route === 'B' ? vnm : null,
+            rvc_percent: rvc,
+          },
+          esg: state.route === 'A' ? {
+            eudr: {
+              polygon_uploaded: !!f.eudr,
+              plot_id: f.eudr ? 'PLOT-' + fakeHash(f.commodity).slice(0, 10).toUpperCase() : null,
+            },
+            cbam_id: f.cbam || null,
+          } : null,
+          security: {
+            electronic_seal_tag: sealTag,
+            title_transfer_hash: titleHash,
+            signature_algorithm: 'RSA-2048',
+            signature_hash: sigHash,
+            mletr_article: 'Art. 6(1) — transferable electronic record',
+          },
+          compliance: {
+            score: computeScore(),
+            findings: state.findings.map(f => ({ id: f.id, system: f.system, severity: f.severity, title: f.title })),
+            passed: state.passed,
+          },
+        };
+
+        return payload;
+      }
+
+      function commodityLabel(code) {
+        return {
+          coffee: 'Coffee Beans',
+          cotton: 'Organic Cotton Yarn',
+          steel: 'Structural Steel Plates',
+          rubber: 'Natural Rubber Sheeting',
+        }[code] || code;
+      }
+
+      function computeScore() {
+        let s = 100;
+        state.findings.forEach(f => { s -= (f.severity === 'critical' ? 30 : 12); });
+        return Math.max(0, Math.min(100, s));
+      }
+
+      // JSON colorizer (safe HTML)
+      function colorize(jsonStr) {
+        // Escape first
+        const esc = jsonStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return esc.replace(
+          /("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"(?:\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+\-]?\d+)?)/g,
+          (match) => {
+            let cls = 'json-number';
+            if (/^"/.test(match)) {
+              cls = /:$/.test(match) ? 'json-key' : 'json-string';
+            } else if (/true|false/.test(match)) {
+              cls = 'json-bool';
+            } else if (/null/.test(match)) {
+              cls = 'json-null';
+            }
+            return '<span class="' + cls + '">' + match + '</span>';
+          }
+        ).replace(/([{}\[\],])/g, '<span class="json-punct">$1</span>');
+      }
+
+      // Terminal animation
+      const termLines = [
+        { t: '► Verifying ICEGATE digital signature .............. OK', color: 'text-[#33ff66]' },
+        { t: '► Resolving forwarder DID (did:portguard:in:...) ... OK', color: 'text-[#33ff66]' },
+        { t: '► Computing e-seal tag &amp; title-transfer hash .... OK', color: 'text-[#33ff66]' },
+        { t: '► Sealing MLETR envelope (RSA-2048) ................ OK', color: 'text-[#33ff66]' },
+        { t: '► Payload ready · transmitting to target systems ....', color: 'text-sky-300' },
+      ];
+
+      async function runTerminal(payload) {
+        els.generateBtn.disabled = true;
+        els.generateBtn.classList.add('opacity-60', 'cursor-wait');
+        els.termContent.innerHTML = '';
+
+        const append = (html) => {
+          const div = document.createElement('div');
+          div.innerHTML = html;
+          els.termContent.appendChild(div);
+          els.termContent.parentElement.scrollTop = els.termContent.parentElement.scrollHeight;
+        };
+
+        append('<div class="text-[#ccc3b9]/70"><span class="text-[#33ff66]">portguard@gateway</span>:<span class="text-sky-400">~</span>$ sign --mletr --target ' + (state.route === 'A' ? 'ICEGATE,ICS2,EUDR' : 'ICEGATE,AITIGA') + '</div>');
+
+        for (const line of termLines) {
+          await sleep(180);
+          append('<div class="' + line.color + '">' + line.t + '</div>');
+        }
+        await sleep(220);
+
+        append('<div class="text-[#ccc3b9]/60 mt-2">// signed payload · ' + (new Date()).toISOString() + '</div>');
+
+        const json = JSON.stringify(payload, null, 2);
+        const pretty = colorize(json);
+        append('<pre class="mt-2 text-[12px] leading-relaxed whitespace-pre-wrap break-words">' + pretty + '</pre>');
+        append('<div class="text-[#ccc3b9]/70 mt-2 caret"><span class="text-[#33ff66]">portguard@gateway</span>:<span class="text-sky-400">~</span>$ <span class="text-[#ccc3b9]">payload delivered · awaiting acknowledgement from customs AS2 endpoint</span></div>');
+
+        els.generateBtn.disabled = false;
+        els.generateBtn.classList.remove('opacity-60', 'cursor-wait');
+      }
+
+      function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+      // ---------- Wire up events ----------
+      function wire() {
+        // Route toggle
+        els.routeBtns.forEach(btn => {
+          btn.addEventListener('click', () => setRoute(btn.dataset.route));
+        });
+
+        // Field listeners
+        const bind = (el, key, transform) => {
+          el.addEventListener('input', () => {
+            let v = el.value;
+            if (transform) v = transform(v);
+            state.form[key] = v;
+            evaluate();
+          });
+          el.addEventListener('change', () => {
+            let v = el.value;
+            if (transform) v = transform(v);
+            state.form[key] = v;
+            evaluate();
+          });
+        };
+        bind(els.iecName, 'iecName');
+        bind(els.invoiceName, 'invoiceName');
+        bind(els.commodity, 'commodity');
+        bind(els.hsCode, 'hsCode', v => v.replace(/[^\d]/g, ''));
+        bind(els.weight, 'weight', v => Number(v));
+        bind(els.fob, 'fob', v => Number(v));
+        bind(els.vnm, 'vnm', v => Number(v));
+        bind(els.cbam, 'cbam');
+
+        els.eudrToggle.addEventListener('change', () => {
+          state.form.eudr = els.eudrToggle.checked;
+          evaluate();
+        });
+
+        // Auto-resolve (event delegation)
+        els.alertsList.addEventListener('click', (e) => {
+          const btn = e.target.closest('.auto-resolve');
+          if (!btn) return;
+          const id = btn.dataset.resolve;
+          const finding = state.findings.find(f => f.id === id);
+          if (finding && typeof finding.resolve === 'function') {
+            finding.resolve();
+            lucide.createIcons();
+          }
+        });
+
+        // Scenarios
+        $$('[data-scenario]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.dataset.scenario;
+            if (scenarios[id]) scenarios[id]();
+            lucide.createIcons();
+          });
+        });
+
+        // Generate payload
+        els.generateBtn.addEventListener('click', () => {
+          const payload = buildPayload();
+          runTerminal(payload);
+        });
+      }
+
+      // ---------- Boot ----------
+      function boot() {
+        wire();
+        setRoute('A');
+        lucide.createIcons();
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+      } else {
+        boot();
+      }
+    })();
+  </script>
+</body>
+
+</html>
